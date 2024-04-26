@@ -18,6 +18,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Password is required"],
     trim: true,
+    select: false,
+    min: 8,
   },
   confirmPassword: {
     type: String,
@@ -30,13 +32,20 @@ const userSchema = new mongoose.Schema({
       message: "Passwords do not match.",
     },
   },
+  role:{
+    type: String,
+    default: "user",
+    enum: {
+      values: ['user', 'agent', 'admin'], //user, owner and admin..agent?
+      message: "{{VALUE}} is not supported"
+    },
+  },
   photo: String,
   phone: {
     type: Number,
     cast: "{{VALUE}} is not a number",
   },
 });
-
 
 userSchema.pre("save", async function (next) {
   // if password is not changed, dont encrypt
@@ -51,7 +60,12 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-
+userSchema.methods.comparePasswords = async function (
+  userPassword,
+  encryptedPassword
+) {
+  return await bcrypt.compare(userPassword, encryptedPassword);
+};
 
 const User = mongoose.model("User", userSchema);
 
