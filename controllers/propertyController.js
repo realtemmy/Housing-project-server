@@ -31,6 +31,30 @@ exports.getAllProperties = asyncHandler(async (req, res) => {
   });
 });
 
+exports.getPropsByDistance = asyncHandler(async (req, res) => {
+  let { distance, lnglat } = req.params;
+  lnglat = lnglat.split(",");
+  const lng = lnglat[0];
+  const lat = lnglat[1];
+  const props = await Property.find({
+    location: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [lng, lat],
+        },
+        $maxDistance: distance * 1000,
+      },
+    },
+  }).sort({ distance: 1 });
+  res.status(200).json({
+    status: "success",
+    data: {
+      props,
+    },
+  });
+});
+
 exports.uploadImages = upload.fields([
   { name: "image", maxCount: 1 },
   { name: "images", maxCount: 8 },
@@ -59,7 +83,7 @@ exports.uploadToCloudinary = asyncHandler(async (req, res, next) => {
 exports.createProperty = asyncHandler(async (req, res) => {
   // add images
   // console.log("Req body: ", req.body);
-  console.log(req.body.latlng.split(",").map(parseFloat))
+  console.log(req.body.latlng.split(",").map(parseFloat));
   const newProp = await Property.create({
     name: req.body.name,
     address: req.body.address,
@@ -74,8 +98,7 @@ exports.createProperty = asyncHandler(async (req, res) => {
       text: req.body.text[index],
     })),
     location: {
-      coordinates: req.body.latlng1qu
-      .split(",").map(parseFloat),
+      coordinates: req.body.latlng1qu.split(",").map(parseFloat),
     },
   });
   res.status(201).json({

@@ -7,7 +7,7 @@ const router = express.Router({ mergeParams: true });
 // On page load, get properties near or close to the user's location;
 // lng, lat, distance
 
-// router.route("/")
+router.route("/lnglat/:lnglat/distance/:distance").get(propertyController.getPropsByDistance)
 router
   .route("/")
   .get(propertyController.getAllProperties)
