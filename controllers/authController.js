@@ -1,8 +1,9 @@
-// for authentication
 const asyncHandler = require("express-async-handler");
+const { promisify } = require("util");
 const User = require("./../models/userModel");
 const jwt = require("jsonwebtoken");
 const AppError = require("./../utils/AppError");
+// const Email = require("./../utils/email");
 
 const createSendToken = (user, statusCode, res) => {
   // create token
@@ -32,6 +33,7 @@ const createSendToken = (user, statusCode, res) => {
 exports.login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
   // check if account exists
+  // console.log("User: ", req.body);
   if (!email || !password) {
     return next(new AppError("Please provide email and password.", 400));
   }
@@ -40,8 +42,9 @@ exports.login = asyncHandler(async (req, res, next) => {
     return next(new AppError("No user with email found", 404));
   }
   // compare with hashed password in db
-  if (!user.comparePasswords(password, user.password)) {
-    return next(new Error("Email or password is incorrect"));
+  const matches = await user.comparePasswords(password, user.password);
+  if (!matches) {
+    return next(new AppError("Email or password is incorrect", 400));
   }
 
   createSendToken(user, 200, res);
@@ -56,6 +59,7 @@ exports.signup = asyncHandler(async (req, res) => {
     confirmPassword: req.body.confirmPassword,
     role: req.body.role,
   });
+  // await new Email(user, "https://google.com").sendWelcome();
   createSendToken(user, 201, res);
 });
 
@@ -73,7 +77,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
     return next(new AppError("You're not logged in. Login to get access", 401));
   }
   // 2) Decode an get the users id
-  const decode = jwt.verify(token, process.env.JWT_SECRET_KEY);
+  const decode = await promisify(jwt.verify)(token, process.env.JWT_SECRET_KEY);
   // 3) Get user from decoded jwt id
   const user = await User.findById(decode.id);
   if (!user) {
@@ -96,7 +100,7 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id).select("+password");
   // 3) Compare prev password with hashed one if they match
   if (!user.comparePasswords(currentPassword, user.password)) {
-    return next(new AppError("Passwords do not match!", 400));
+    return next(new AppError("Incorrect password!", 401));
   }
   // 4) save the current user with the new password
   user.password = newPassword;
@@ -104,4 +108,13 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
   await user.save();
 
   createSendToken(user, 200, res);
+});
+
+exports.restrictToAdmin = asyncHandler(async (req, res, next) => {
+  // if user role is not admin, return error
+  if (req.user.role !== "admin") {
+    return next(new AppError("You do not have access to this route!", 401));
+  }
+
+  next();
 });
