@@ -1,5 +1,6 @@
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
+const AppError = require("./AppError");
 
 cloudinary.config({
   cloud_name: "dyrcpslwb",

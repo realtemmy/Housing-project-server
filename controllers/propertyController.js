@@ -98,7 +98,7 @@ exports.createProperty = asyncHandler(async (req, res) => {
       text: req.body.text[index],
     })),
     location: {
-      coordinates: req.body.latlng1qu.split(",").map(parseFloat),
+      coordinates: req.body.latlng.split(",").map(parseFloat),
     },
   });
   res.status(201).json({
