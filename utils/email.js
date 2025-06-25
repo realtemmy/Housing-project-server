@@ -16,8 +16,7 @@ class Email {
       secure: false,
       auth: {
         user: process.env.EMAIL_USERNAME,
-        // pass: "xsmtpsib-ca36242813c60762f85e4655dbe621ec01ad79af4d7d238fef315519762df7a5-N4OBbgkcwK15CTnS",
-        pass: "f5b2feec48f635d6712db809d2a35a85",
+        pass: process.env.PASS,
       },
     });
 
