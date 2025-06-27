@@ -36,14 +36,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "user",
     enum: {
-      values: ['user', 'agent', 'admin'], //user, owner and admin..agent?
+      values: ['user', 'owner'], //user and owner
       message: "{{VALUE}} is not supported"
     },
   },
   photo: String,
   phone: {
-    type: Number,
-    cast: "{{VALUE}} is not a number",
+    type: String,
+    cast: "{{VALUE}} is not a string",
   },
 });
 

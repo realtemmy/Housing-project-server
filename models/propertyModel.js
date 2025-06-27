@@ -8,9 +8,42 @@ const propertySchema = new mongoose.Schema(
       required: [true, "Property must have a name"],
       unique: true,
     },
-    address: {
+    propertyType: {
       type: String,
-      required: [true, "property must have an address"],
+      enum: [
+        "apartment",
+        "house",
+        "land",
+        "office",
+        "duplex",
+        "shop",
+        "warehouse",
+      ],
+      required: true,
+    },
+    purpose: {
+      type: String,
+      enum: ["rent", "sale", "lease"],
+      required: true,
+    },
+    address: {
+      street: {
+        type: String,
+        required: [true, "Street of user's address is required."],
+      },
+      city: {
+        type: String,
+        required: [true, "City is required."],
+      },
+      state: {
+        type: String,
+        required: [true, "State is required."],
+      },
+      country: {
+        type: String,
+        default: "Nigeria",
+      },
+      postalCode: string,
     },
     ownerId: {
       type: mongoose.Schema.ObjectId,
@@ -49,25 +82,20 @@ const propertySchema = new mongoose.Schema(
       address: String,
       description: String,
     },
-    section: {
-      type: mongoose.Schema.ObjectId,
-      required: [true, "Property must belong to a section"],
-    },
     category: {
-      type: mongoose.Schema.ObjectId,
-      required: [true, "Property must belong to a category"],
+      type: String,
+      enum: ["residential", "commercial", "industrial", "mixed-use"],
+    },
+    section: {
+      type: String, // e.g., "Phase 1", "Block A"
     },
     amenities: [String],
     slug: String,
-    createdAt: {
-      type: Date,
-      default: Date.now(),
-      select: false,
-    },
   },
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
+    timestamps: true,
   }
 );
 
